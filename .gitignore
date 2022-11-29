@@ -1,0 +1,6 @@
+__pycache__
+venv
+
+Drive/*
+templates/blog.txt
+templates/Users.txt
