@@ -44,7 +44,8 @@ if "beamdb" not in databases:
     print("CREATED TABLE customers")
     mycursor.execute("CREATE TABLE cart (\
             username VARCHAR(255),\
-            product VARCHAR(255)\
+            product VARCHAR(255),\
+            quantity int\
             )")
 else:
     mycursor.execute("USE beamdb")
@@ -126,11 +127,17 @@ def products():
     if not g.user:
         return redirect(url_for('login'))
     if request.method == 'POST' and request.form:
-        product = request.form['Add to Cart']
+        product = request.form['AddtoCart']
 
-        mycursor.execute(f"INSERT INTO cart (username, product) values ('{g.user.username}', '{product}')")
+        mycursor.execute(f"SELECT username FROM cart WHERE username='{g.user.username}' AND product='{product}';")
+        sameuser = mycursor.fetchall()  #if the same product is added to cart, the quantity should be incremented
+        if sameuser:
+            mycursor.execute(f"UPDATE cart set quantity=quantity+1 WHERE username='{sameuser[0][0]}'")
+        else:
+            mycursor.execute(f"INSERT INTO cart (username, product, quantity) values ('{g.user.username}', '{product}', 1)")
+
         mydb.commit()
-        print(f"User {g.user} *Has added {product} to cart")
+        print(f"User {g.user.username} *Has added {product} to cart")
     return render_template('products.html')
 
 # logout page
