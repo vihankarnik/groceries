@@ -144,15 +144,15 @@ def products():
 @app.route('/cart')
 def cart():
     if not g.user:
-        return redirect(url_for(login))
+        return redirect(url_for('login'))
     return render_template('cart.html')
 
 # final page
 @app.route('/final')
 def final():
     if not g.user:
-        return redirect(url_for(login))
-    return render_template('cart.html')
+        return redirect(url_for('login'))
+    return render_template('final.html')
 
 # logout page
 @app.route('/logout')
