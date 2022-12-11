@@ -140,6 +140,20 @@ def products():
         print(f"User {g.user.username} *Has added {product} to cart")
     return render_template('products.html')
 
+# cart page
+@app.route('/cart')
+def cart():
+    if not g.user:
+        return redirect(url_for(login))
+    return render_template('cart.html')
+
+# final page
+@app.route('/final')
+def final():
+    if not g.user:
+        return redirect(url_for(login))
+    return render_template('cart.html')
+
 # logout page
 @app.route('/logout')
 def logout():

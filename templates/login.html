@@ -2,16 +2,28 @@
 <html lang="en">
 
 <head>
-  <title>store name</title>
-  <link rel="stylesheet" href="static/main.css">
-  <link rel="shortcut icon" href="static/img/logo.png">
+  <title>login</title>
+  <link rel="stylesheet" href="/static/main.css">
+  <link rel="shortcut icon" href="/static/img/logo.png">
   <meta charset="utf-8" />
 </head>
 
 <body>
-  <center>
-    <img src="/static/img/logo.png" height="100" width="100">
-  </center>
+  <nav>
+    <img src="/static/img/logo.png" ;width=75 ; height=75>
+    <input type="checkbox" id="check">
+    <label for="check" class="checkbtn">
+      <i class="fas fa-bars"></i>
+    </label>
+    </label>
+    <ul>
+      <li><a class="active" href="/">login</a></li>
+      <li><a href="/products">products</a></li>
+      <li><a href="/cart">cart</a></li>
+      <li><a href="/logout">logout</a></li>
+    </ul>
+  </nav>
+
   <div class="center">
     <h1>welcome...or welcome back!</h1>
     <form method="post">
@@ -28,7 +40,7 @@
 
       <input type="submit" value="Login">
       <div class="signup_link">
-        never made an account? <a href="signup.html">signup here!</a>
+        never made an account? <a href="/signup">signup here!</a>
       </div>
     </form>
   </div>
