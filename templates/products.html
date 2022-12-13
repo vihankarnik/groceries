@@ -1,3 +1,4 @@
+{%block content%}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -30,6 +31,8 @@
   <div class="container">
 
     <h3 class="title">
+      <mark>welcome {{g.user.username}}</mark>
+      <br>
       <mark>[🏪] : it's a fresh day, and we've got : </mark>
     </h3>
 
@@ -107,3 +110,4 @@
 </body>
 
 </html>
+{%endblock%}

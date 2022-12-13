@@ -19,7 +19,6 @@ app = Flask(__name__, static_folder='static')
 app.secret_key = os.urandom(32)
 app.session_cookie_secure = True
 
-# User profiling
 mydb = mysql.connector.connect(
         host = "localhost",
         user = "vihansql",
@@ -38,8 +37,7 @@ if "beamdb" not in databases:
 
     mycursor.execute("CREATE TABLE customers (\
             username VARCHAR(255),\
-            password VARCHAR(255),\
-            cart VARCHAR(255)\
+            password VARCHAR(255)\
             )")
     print("CREATED TABLE customers")
     mycursor.execute("CREATE TABLE cart (\
@@ -51,6 +49,7 @@ else:
     mycursor.execute("USE beamdb")
     print("USING DATABASE beamdb")
 
+# User profiling
 class User:
     def __init__(self, username, password):
         self.username = username
@@ -127,12 +126,12 @@ def products():
     if not g.user:
         return redirect(url_for('login'))
     if request.method == 'POST' and request.form:
-        product = request.form['AddtoCart']
+        product = request.form['addToCart']
 
         mycursor.execute(f"SELECT username FROM cart WHERE username='{g.user.username}' AND product='{product}';")
         sameuser = mycursor.fetchall()  #if the same product is added to cart, the quantity should be incremented
         if sameuser:
-            mycursor.execute(f"UPDATE cart set quantity=quantity+1 WHERE username='{sameuser[0][0]}'")
+            mycursor.execute(f"UPDATE cart SET quantity=quantity+1 WHERE username='{sameuser[0][0]}'")
         else:
             mycursor.execute(f"INSERT INTO cart (username, product, quantity) values ('{g.user.username}', '{product}', 1)")
 
@@ -141,11 +140,30 @@ def products():
     return render_template('products.html')
 
 # cart page
-@app.route('/cart')
+@app.route('/cart', methods=['GET', 'POST'])
 def cart():
     if not g.user:
         return redirect(url_for('login'))
-    return render_template('cart.html')
+    if request.method == 'POST' and request.form:
+        increment = request.form['increment']
+        mycursor.execute(f"UPDATE TABLE cart SET quantity=quantity+1 WHERE username='{g.user.username}' AND product='{increment}'")
+
+        decrement = request.form['decrement']
+        mycursor.execute(f"SELECT quantity FROM cart WHERE username='{g.user.username}' AND product='{decrement}'")
+        if mycursor.fetchall()[0][0] == 1:
+            mycursor.execute(f"DELETE FROM cart WHERE username='{g.user.username}' AND product='{decrement}' ")
+        else:
+            mycursor.execute(f"UPDATE TABLE cart SET quantity=quantity-1 WHERE username='{g.user.username}' AND product='{increment}'")
+
+        delete = request.form['delete']
+        mycursor.execute(f"DELETE FROM cart WHERE username='{g.user.username}' AND product='{decrement}' ")
+        mydb.commit()
+
+        checkout = request.form['checkout']
+
+    mycursor.execute(f"SELECT product, quantity FROM cart WHERE username='{g.user.username}'")
+    cartitems = mycursor.fetchall()
+    return render_template('cart.html', cartitems=cartitems)
 
 # final page
 @app.route('/final')
