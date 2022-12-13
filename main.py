@@ -121,6 +121,8 @@ def signup():
     return render_template('signup.html')
 
 # products page
+prices = {"white sandwich bread":65, "chocolate chip muffins":125, "sliced loaf cake":150, "filtered milk":160, "white eggs (18x)":195, "cream cheese (8 oz.)":120}
+
 @app.route('/products', methods=['GET', 'POST'])
 def products():
     if not g.user:
@@ -131,7 +133,7 @@ def products():
         mycursor.execute(f"SELECT username FROM cart WHERE username='{g.user.username}' AND product='{product}';")
         sameuser = mycursor.fetchall()  #if the same product is added to cart, the quantity should be incremented
         if sameuser:
-            mycursor.execute(f"UPDATE cart SET quantity=quantity+1 WHERE username='{sameuser[0][0]}'")
+            mycursor.execute(f"UPDATE cart SET quantity=quantity+1 WHERE username='{sameuser[0][0]}' AND product='{product}'")
         else:
             mycursor.execute(f"INSERT INTO cart (username, product, quantity) values ('{g.user.username}', '{product}', 1)")
 
@@ -145,25 +147,42 @@ def cart():
     if not g.user:
         return redirect(url_for('login'))
     if request.method == 'POST' and request.form:
-        increment = request.form['increment']
-        mycursor.execute(f"UPDATE TABLE cart SET quantity=quantity+1 WHERE username='{g.user.username}' AND product='{increment}'")
+        increment = request.form.get('increment', False)
+        if increment:
+            mycursor.execute(f"UPDATE cart SET quantity=quantity+1 WHERE username='{g.user.username}' AND product='{increment}'")
 
-        decrement = request.form['decrement']
-        mycursor.execute(f"SELECT quantity FROM cart WHERE username='{g.user.username}' AND product='{decrement}'")
-        if mycursor.fetchall()[0][0] == 1:
-            mycursor.execute(f"DELETE FROM cart WHERE username='{g.user.username}' AND product='{decrement}' ")
-        else:
-            mycursor.execute(f"UPDATE TABLE cart SET quantity=quantity-1 WHERE username='{g.user.username}' AND product='{increment}'")
+        decrement = request.form.get('decrement', False)
+        if decrement:
+            mycursor.execute(f"SELECT quantity FROM cart WHERE username='{g.user.username}' AND product='{decrement}'")
+            if mycursor.fetchall()[0][0] == 1:
+                mycursor.execute(f"DELETE FROM cart WHERE username='{g.user.username}' AND product='{decrement}' ")
+            else:
+                mycursor.execute(f"UPDATE cart SET quantity=quantity-1 WHERE username='{g.user.username}' AND product='{decrement}'")
 
-        delete = request.form['delete']
-        mycursor.execute(f"DELETE FROM cart WHERE username='{g.user.username}' AND product='{decrement}' ")
+        delete = request.form.get('delete', False)
+        if delete:
+            mycursor.execute(f"DELETE FROM cart WHERE username='{g.user.username}' AND product='{delete}'")
+
+        deleteCart = request.form.get('deleteCart', False)
+        if deleteCart:
+            mycursor.execute(f"DELETE FROM cart WHERE username='{g.user.username}'")
         mydb.commit()
 
-        checkout = request.form['checkout']
+        checkout = request.form.get('checkout', False)
+        if checkout:
+            print(checkout)
+            mycursor.execute(f"DELETE FROM cart WHERE username='{g.user.username}'")
+            return redirect(url_for('final'))
 
     mycursor.execute(f"SELECT product, quantity FROM cart WHERE username='{g.user.username}'")
     cartitems = mycursor.fetchall()
-    return render_template('cart.html', cartitems=cartitems)
+    cartlength = len(cartitems)
+
+    totalprice = 0
+    for i in range(cartlength):
+        totalprice += cartitems[i][1]*prices[cartitems[i][0]]
+
+    return render_template('cart.html', cartitems=cartitems, cartlength=cartlength, prices=prices, totalprice=totalprice)
 
 # final page
 @app.route('/final')
